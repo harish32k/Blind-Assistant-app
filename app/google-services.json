@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "329967849045",
+    "firebase_url": "https://api-endpoints-3d693-default-rtdb.firebaseio.com",
+    "project_id": "api-endpoints-3d693",
+    "storage_bucket": "api-endpoints-3d693.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:329967849045:android:243c43b85393f87fed8edc",
+        "android_client_info": {
+          "package_name": "com.example.blindassist"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "329967849045-r23a4rhf0lnhre0raisja7mru3hg0ai7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzPgsazi0sMfE_CbSs9ql3wPQKauDK4kI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "329967849045-r23a4rhf0lnhre0raisja7mru3hg0ai7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
