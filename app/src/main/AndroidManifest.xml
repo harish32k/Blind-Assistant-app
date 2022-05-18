@@ -20,6 +20,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BlindAssistant">
         <activity
+            android:name=".OCRDisplay"
+            android:exported="false" />
+        <activity
+            android:name=".GetDataActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ImageDisplayBase"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity2"
             android:exported="false" />
         <activity

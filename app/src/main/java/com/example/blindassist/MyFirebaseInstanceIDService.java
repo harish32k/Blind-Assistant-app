@@ -1,5 +1,6 @@
 package com.example.blindassist;
 
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -24,6 +25,10 @@ public class MyFirebaseInstanceIDService extends FirebaseMessagingService {
         // manage this apps subscriptions on the server side, send the
         // Instance ID token to your app server.
         // sendRegistrationToServer(refreshedToken);
+        SharedPreferences shrd = getSharedPreferences("firebase_token", MODE_PRIVATE);
+        SharedPreferences.Editor editor = shrd.edit();
+        editor.putString("token", refreshedToken);
+        editor.apply();
     }
 
     @Override

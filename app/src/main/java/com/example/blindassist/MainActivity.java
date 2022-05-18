@@ -7,6 +7,7 @@ import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -30,6 +31,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        SharedPreferences shrd = getSharedPreferences("firebase_token", MODE_PRIVATE);
+        String fb_token = shrd.getString("token", "no token found");
+        Log.d("saved_token", "Saved token is: " + fb_token);
 
         //Bluetooth enabling section
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();

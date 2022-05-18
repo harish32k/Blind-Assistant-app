@@ -112,9 +112,10 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button1:
-                speak("Performing Object Recognition");
-                new SendMessage(socket,"object");
-                intent = new Intent(this,MainActivity2.class);
+                //speak("Performing Object Recognition");
+                //new SendMessage(socket,"object");
+                intent = new Intent(this,GetDataActivity.class);
+                //intent = new Intent(this,MainActivity2.class);
                 startActivity(intent);
                 break;
             case R.id.button2:
