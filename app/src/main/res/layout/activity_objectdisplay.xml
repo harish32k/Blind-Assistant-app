@@ -4,12 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".OCRDisplay">
-
-
+    tools:context=".ObjectDisplay">
 
     <ImageView
-        android:id="@+id/ocrImage"
+        android:id="@+id/myImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
@@ -18,35 +16,34 @@
         tools:srcCompat="@tools:sample/avatars" />
 
     <Button
-        android:id="@+id/ocr_prev"
+        android:id="@+id/previous_button"
         android:layout_width="90dp"
         android:layout_height="50dp"
         android:text="Prev"
-        app:layout_constraintTop_toBottomOf="@+id/ocrImage"
+        app:layout_constraintTop_toBottomOf="@+id/myImage"
         tools:ignore="MissingConstraints"
         tools:layout_editor_absoluteX="48dp" />
 
     <Button
-        android:id="@+id/ocr_next"
+        android:id="@+id/next_button"
         android:layout_width="90dp"
         android:layout_height="50dp"
         android:layout_marginLeft="88dp"
         android:text="Next"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/ocrTextView"
-        app:layout_constraintTop_toBottomOf="@+id/ocrImage"
+        app:layout_constraintLeft_toRightOf="@+id/textView"
+        app:layout_constraintTop_toBottomOf="@+id/myImage"
         tools:ignore="MissingConstraints" />
 
     <TextView
-        android:id="@+id/ocrTextView"
+        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="myTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/ocr_prev"
-        app:layout_constraintTop_toBottomOf="@+id/ocrImage"
-        app:layout_constraintRight_toLeftOf="@+id/ocr_next"
+        app:layout_constraintLeft_toRightOf="@+id/previous_button"
+        app:layout_constraintTop_toBottomOf="@+id/myImage"
+        app:layout_constraintRight_toLeftOf="@+id/next_button"
         tools:layout_editor_absoluteY="622dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>
-

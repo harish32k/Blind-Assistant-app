@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -11,11 +12,14 @@ import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -23,9 +27,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
-import java.awt.*;
+public class ObjectDisplay extends AppCompatActivity implements View.OnClickListener {
 
-public class OCRDisplay extends AppCompatActivity implements View.OnClickListener{
     private int currentIndex = 0;
     private HashMap<String, byte[]> imageMap;
     private ArrayList<String> image_names;
@@ -37,8 +40,8 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
     public JsonArray currentList;
     public TextView textView;
     private TextToSpeech mTTS;
-    private Bitmap bitmap;
 
+    private Bitmap bitmap;
 
 
     public JsonObject getJsonFromString(String jsonString) {
@@ -46,15 +49,40 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
         return obj;
     }
 
-    public void checkBoxes(int x, int y) {
+    void checkBoxes(int x, int y) {
+        ArrayList<String> detected = new ArrayList<>();
+        String found_items = "";
+        for (JsonElement jelem: currentList) {
+            JsonObject box = jelem.getAsJsonObject();
+            float xmin = box.get("xmin").getAsFloat();
+            float ymin = box.get("ymin").getAsFloat();
+            float xmax = box.get("xmax").getAsFloat();
+            float ymax = box.get("ymax").getAsFloat();
 
+            if((x>=xmin && x<=xmax) && (y>=ymin && y<=ymax)) {
+                String item = box.get("name").getAsString();
+                detected.add(item);
+                found_items += (item + ". ");
+                Log.d("detected", item);
+            }
+            Log.d("jsonElement", box.toString());
+        }
+        if(found_items != "")
+        speak(found_items.substring(0, found_items.length()));
     }
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ocrdisplay);
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getSupportActionBar().hide();
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        setContentView(R.layout.activity_objectdisplay);
+
+        //////// setting TTS
         mTTS =  new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int i) {
@@ -73,10 +101,10 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
         modelOutput = getJsonFromString(intent.getStringExtra("json_data"));
         Log.d("model-json-test", modelOutput.toString());
 
-        imageView = findViewById(R.id.ocrImage);
-        nextButton = findViewById(R.id.ocr_next);
-        prevButton = findViewById(R.id.ocr_prev);
-        textView = findViewById(R.id.ocrTextView);
+        imageView = findViewById(R.id.myImage);
+        nextButton = findViewById(R.id.next_button);
+        prevButton = findViewById(R.id.previous_button);
+        textView = findViewById(R.id.textView);
         nextButton.setOnClickListener(this);
         prevButton.setOnClickListener(this);
 
@@ -99,7 +127,17 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
                 return false;
             }
         });
+
     }
+
+    private  void speak( String message){
+        float pitch = 1f;
+        float speed = 1f;
+        mTTS.setPitch(pitch);
+        mTTS.setSpeechRate(speed);
+        mTTS.speak(message,TextToSpeech.QUEUE_FLUSH,null);
+    }
+
 
     @Override
     public void onClick(View v) {

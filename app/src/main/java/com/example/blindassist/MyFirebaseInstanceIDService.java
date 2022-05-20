@@ -1,5 +1,6 @@
 package com.example.blindassist;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 
@@ -61,5 +62,9 @@ public class MyFirebaseInstanceIDService extends FirebaseMessagingService {
 
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
+        Intent intent = new Intent(this, GetDataActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        //Log.d(TAG, "testing");
     }
 }

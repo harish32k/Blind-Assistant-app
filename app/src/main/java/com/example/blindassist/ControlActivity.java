@@ -120,8 +120,8 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
                 break;
             case R.id.button2:
                 speak("Performing Image Captioning");
-                new SendMessage(socket,"caption");
-                intent = new Intent(this,MainActivity2.class);
+                //new SendMessage(socket,"caption");
+                intent = new Intent(this,TesterActivity.class);
                 startActivity(intent);
                 break;
             case R.id.button3:

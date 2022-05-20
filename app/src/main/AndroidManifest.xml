@@ -23,6 +23,12 @@
             android:name=".OCRDisplay"
             android:exported="false" />
         <activity
+            android:name=".TesterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ObjectDisplay"
+            android:exported="false" />
+        <activity
             android:name=".GetDataActivity"
             android:exported="false" />
         <activity

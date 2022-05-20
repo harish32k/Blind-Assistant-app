@@ -5,19 +5,28 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +39,11 @@ public class GetDataActivity extends AppCompatActivity {
     public Set<String> pendingImages;
     public DataSnapshot snapshot;
     public ArrayList<String> image_names;
+    public String image_dir;
+    public JsonObject outputJson;
+    public ArrayList<JsonArray> boxes;
+    public TextView statusTextView;
+    public ProgressBar progressBar;
 
     public String getJsonFromSnapshot(DataSnapshot dataSnapshot) {
         Object object = dataSnapshot.getValue(Object.class);
@@ -37,35 +51,101 @@ public class GetDataActivity extends AppCompatActivity {
         return json;
     }
 
-    public void download_img(String img_name, StorageReference storageRef) {
+    public JsonObject getJsonFromString(String jsonString) {
+        jsonString = getJsonFromSnapshot(snapshot);
+        JsonObject obj = JsonParser.parseString(jsonString).getAsJsonObject();
+        return obj;
+    }
+
+    public void process_boxes() {
+        boxes = new ArrayList<>();
+        JsonObject predictions = outputJson.getAsJsonObject("prediction");
+        for(String image_name: image_names) {
+            JsonArray jsonArray = predictions.getAsJsonArray(image_name);
+            boxes.add(jsonArray);
+            Log.d("json-test", jsonArray.toString());
+            Intent intent = new Intent(GetDataActivity.this, ObjectDisplay.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.putExtra("image_names", image_names);
+            intent.putExtra("json_data", getJsonFromSnapshot(snapshot));
+            startActivity(intent);
+        }
+    }
+
+    public void post_download() {
+        statusTextView.setText("Processing data, please wait...");
+        String task = outputJson.get("task").getAsString();
+        switch (task) {
+            case "object":
+                process_boxes();
+                statusTextView.setText("Success!");
+                progressBar.setVisibility(View.GONE);
+                break;
+            case "ocr":
+                statusTextView.setText("Success!");
+                progressBar.setVisibility(View.GONE);
+                break;
+            case "depth":
+                statusTextView.setText("Success!");
+                progressBar.setVisibility(View.GONE);
+                break;
+            default:
+                break;
+        }
+    }
+    public void download_img(String img_name, StorageReference storageRef) throws IOException {
+        statusTextView.setText("Downloading "+img_name+"...");
         StorageReference imgRef = storageRef.child(img_name+".jpg");
-        final long THREE_MEGABYTES = 3*1024*1024;
-        imgRef.getBytes(THREE_MEGABYTES).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+        File localFile = new File(image_dir, img_name+".jpg");
+        imgRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
             @Override
-            public void onSuccess(byte[] bytes) {
-                imageMap.put(img_name, bytes);
+            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                 Log.d("fb-download","Downloaded "+img_name+".jpg");
+                statusTextView.setText("Downloaded "+img_name+"...");
                 pendingImages.remove(img_name);
                 if(pendingImages.isEmpty()) {
-                    Log.d("fb-download", "imageMap: " + imageMap.size() + " elements");
+                    statusTextView.setText("Downloaded all images...");
                     Log.d("fb-download", "pendingImages: " + pendingImages.size() + " elements");
                     Log.d("fb-download", "Successfully completed downloading");
-                    Intent intent = new Intent(GetDataActivity.this, OCRDisplay.class);
-                    intent.putExtra("imageMap", imageMap);
-                    intent.putExtra("image_names", image_names);
-                    intent.putExtra("snapshot", (Parcelable) snapshot);
-                    startActivity(intent);
+                    post_download();
                 }
             }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+            }
         });
-
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_get_data);
+        statusTextView = findViewById(R.id.statusTextView);
+        progressBar = findViewById(R.id.getDataProgress);
+
         DatabaseReference mDatabase;
+        image_dir = getExternalCacheDir()+"/blind_assistant_images";
+        File dir = new File(image_dir);
+        boolean dirCreated = dir.mkdir();
+
+        Log.d("fb-download", "created dir: " + image_dir +", " + dirCreated);
+        //delete all existing image files
+        if (dir.isDirectory())
+        {
+            statusTextView.setText("deleting old images...");
+            Log.d("fb-download", "dir exists, "+image_dir);
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++)
+            {
+                new File(dir, children[i]).delete();
+                Log.d("fb-download", "Deleted: "+children[i]);
+            }
+        }
+
+
         mDatabase = FirebaseDatabase.getInstance().getReference("recent");
         mDatabase.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
@@ -74,28 +154,27 @@ public class GetDataActivity extends AppCompatActivity {
                     Log.e("firebase-debug", "Error getting data", task.getException());
                 }
                 else {
+
+                    statusTextView.setText("obtained model data...");
                     FirebaseStorage storage = FirebaseStorage.getInstance();
                     StorageReference storageRef = storage.getReference();
-                    imageMap = new HashMap<>();
                     pendingImages = new HashSet<String>();
-
                     snapshot = task.getResult();
+                    outputJson = getJsonFromString(getJsonFromSnapshot(snapshot));
                     image_names = (ArrayList<String>) snapshot.child("img_list").getValue();
-
-                    //Log.d("firebase-debug", String.valueOf(task.getResult()));
-
-                    //ArrayList<String> image_names = (ArrayList<String>) task.getResult().getValue();
                     for(String image_name: image_names) pendingImages.add(image_name);
-                    Log.d("fb-download", "imageMap: " + imageMap.size() + " elements");
+
                     Log.d("fb-download", "pendingImages: " + pendingImages.size() + " elements");
                     for(String image_name: image_names) {
-                        download_img(image_name, storageRef);
+                        try {
+                            download_img(image_name, storageRef);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         Log.d("fb-download", image_name);
                     }
-                    //Log.d("firebase-debug", String.valueOf(task.getResult()));
                 }
             }
         });
-
     }
 }
