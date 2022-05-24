@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".DepthDisplay">
+
+    <ImageView
+        android:id="@+id/depthImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="MissingConstraints"
+        tools:srcCompat="@tools:sample/avatars" />
+
+    <Button
+        android:id="@+id/depth_prev"
+        android:layout_width="90dp"
+        android:layout_height="50dp"
+        android:text="Prev"
+        app:layout_constraintTop_toBottomOf="@+id/depthImage"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="48dp" />
+
+    <Button
+        android:id="@+id/depth_next"
+        android:layout_width="90dp"
+        android:layout_height="50dp"
+        android:layout_marginLeft="88dp"
+        android:text="Next"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/depthTextView"
+        app:layout_constraintTop_toBottomOf="@+id/depthImage"
+        tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/depthTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="myTextView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/depth_prev"
+        app:layout_constraintTop_toBottomOf="@+id/depthImage"
+        app:layout_constraintRight_toLeftOf="@+id/depth_next"
+        tools:layout_editor_absoluteY="622dp" />
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+

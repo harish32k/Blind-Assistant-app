@@ -1,16 +1,18 @@
 package com.example.blindassist;
 
+import com.snatik.polygon.Point;
+import com.snatik.polygon.Polygon;
+
+import java.util.List;
+
 public class Box {
-    public Double xmin;
-    public Double ymin;
-    public Double xmax;
-    public Double ymax;
-    public String label;
-    public Box(String name, Double xmin, Double ymin, Double xmax, Double ymax) {
-        this.label = label;
-        this.xmin = xmin;
-        this.ymin = ymin;
-        this.xmax = xmax;
-        this.ymax = ymax;
+    public String desc;
+    public String locale;
+    public Polygon polygon;
+    //public List<List<Integer>> coordinates;
+    public Box(Polygon polygon, String desc, String locale) {
+        this.polygon = polygon;
+        this.desc = desc;
+        this.locale = locale;
     }
 }

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -57,11 +58,23 @@ public class GetDataActivity extends AppCompatActivity {
         return obj;
     }
 
+    public void process_poly() {
+        Intent intent = new Intent(GetDataActivity.this, OCRDisplay.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("image_names", image_names);
+        intent.putExtra("json_data", getJsonFromSnapshot(snapshot));
+        startActivity(intent);
+    }
+
     public void process_boxes() {
         boxes = new ArrayList<>();
         JsonObject predictions = outputJson.getAsJsonObject("prediction");
         for(String image_name: image_names) {
-            JsonArray jsonArray = predictions.getAsJsonArray(image_name);
+            JsonArray jsonArray;
+            jsonArray = predictions.getAsJsonArray(image_name);
+            if (jsonArray == null) {
+                jsonArray = new JsonArray();
+            }
             boxes.add(jsonArray);
             Log.d("json-test", jsonArray.toString());
             Intent intent = new Intent(GetDataActivity.this, ObjectDisplay.class);
@@ -71,6 +84,42 @@ public class GetDataActivity extends AppCompatActivity {
             startActivity(intent);
         }
     }
+
+    public void process_depth() {
+        Log.d("depth-display", "checked");
+        Intent intent = new Intent(GetDataActivity.this, DepthDisplay.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("image_names", image_names);
+        startActivity(intent);
+    }
+
+    public void caption_starter() {
+        outputJson = outputJson.get("prediction").getAsJsonObject();
+        Intent intent = new Intent(GetDataActivity.this, CaptionDisplay.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("image_names", image_names);
+        intent.putExtra("json_data", outputJson.toString());
+        startActivity(intent);
+    }
+
+    public void process_obj_depth_boxes() {
+        boxes = new ArrayList<>();
+        JsonObject predictions = outputJson.getAsJsonObject("prediction");
+        for(String image_name: image_names) {
+            JsonArray jsonArray = predictions.getAsJsonArray(image_name);
+            if (jsonArray == null) {
+                jsonArray = new JsonArray();
+            }
+            boxes.add(jsonArray);
+            Log.d("json-test", jsonArray.toString());
+            Intent intent = new Intent(GetDataActivity.this, ObjDepthDisplay.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.putExtra("image_names", image_names);
+            intent.putExtra("json_data", getJsonFromSnapshot(snapshot));
+            startActivity(intent);
+        }
+    }
+
 
     public void post_download() {
         statusTextView.setText("Processing data, please wait...");
@@ -82,17 +131,31 @@ public class GetDataActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
                 break;
             case "ocr":
+                process_poly();
                 statusTextView.setText("Success!");
                 progressBar.setVisibility(View.GONE);
                 break;
             case "depth":
+                process_depth();
                 statusTextView.setText("Success!");
                 progressBar.setVisibility(View.GONE);
                 break;
+            case "caption":
+                caption_starter();
+                statusTextView.setText("Success!");
+                progressBar.setVisibility(View.GONE);
+                break;
+            case "obj_depth":
+                process_obj_depth_boxes();
+                statusTextView.setText("Success!");
+                progressBar.setVisibility(View.GONE);
+                break;
+
             default:
                 break;
         }
     }
+
     public void download_img(String img_name, StorageReference storageRef) throws IOException {
         statusTextView.setText("Downloading "+img_name+"...");
         StorageReference imgRef = storageRef.child(img_name+".jpg");

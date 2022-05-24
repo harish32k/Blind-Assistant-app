@@ -11,8 +11,8 @@
     <Button
         android:id="@+id/button1"
         android:layout_width="280dp"
-        android:layout_height="70dp"
-        android:layout_marginTop="60dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="72dp"
         android:text="Object Recognition"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
@@ -23,8 +23,8 @@
     <Button
         android:id="@+id/button2"
         android:layout_width="280dp"
-        android:layout_height="70dp"
-        android:layout_marginTop="52dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="22dp"
         android:text="Image Captioning"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
@@ -35,8 +35,8 @@
     <Button
         android:id="@+id/button3"
         android:layout_width="280dp"
-        android:layout_height="70dp"
-        android:layout_marginTop="52dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="22dp"
         android:text="Facial Recognition"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
@@ -47,8 +47,8 @@
     <Button
         android:id="@+id/button4"
         android:layout_width="280dp"
-        android:layout_height="70dp"
-        android:layout_marginTop="52dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="22dp"
         android:text="Read Text"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
@@ -59,8 +59,8 @@
     <Button
         android:id="@+id/button5"
         android:layout_width="280dp"
-        android:layout_height="70dp"
-        android:layout_marginTop="52dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="22dp"
         android:text="Depth Estimation"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
@@ -69,16 +69,49 @@
         app:layout_constraintTop_toBottomOf="@+id/button4" />
 
     <Button
+        android:id="@+id/button6"
+        android:layout_width="280dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="22dp"
+        android:text="Objects and depth"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button5" />
+
+    <Button
+        android:id="@+id/button7"
+        android:layout_width="280dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="22dp"
+        android:text="Grief signal"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button6" />
+
+    <Button
         android:id="@+id/speak"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="76dp"
         android:text="Speak"
         android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button5"
-        app:layout_constraintVertical_bias="0.612" />
+        app:layout_constraintTop_toBottomOf="@+id/button7"
+        app:layout_constraintVertical_bias="0.437" />
+
+    <Button
+        android:id="@+id/recent_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recent"
+        android:textColor="@color/white"
+        app:layout_constraintBaseline_toBaselineOf="@+id/speak"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/speak" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

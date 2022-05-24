@@ -3,7 +3,9 @@ package com.example.blindassist;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -11,19 +13,23 @@ import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.snatik.polygon.Point;
+import com.snatik.polygon.Polygon;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
-import java.awt.*;
 
 public class OCRDisplay extends AppCompatActivity implements View.OnClickListener{
     private int currentIndex = 0;
@@ -34,10 +40,13 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
     private Button prevButton;
     public String image_dir;
     public JsonObject modelOutput;
-    public JsonArray currentList;
+    public ArrayList<Box> currentList;
     public TextView textView;
     private TextToSpeech mTTS;
     private Bitmap bitmap;
+    public JsonObject outputJson;
+    public ArrayList<ArrayList<Box>> boxes_tray;
+    public BluetoothSocket socket = ControlActivity.skt;
 
 
 
@@ -46,14 +55,79 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
         return obj;
     }
 
-    public void checkBoxes(int x, int y) {
+    public void createBoxes() {
+        //String image_names[] = {"img1", "img2", "img3", "img4"};
 
+        JsonObject predictions = null;
+        try {
+            predictions = outputJson.get("prediction").getAsJsonObject();
+        } catch (Exception e) {
+            predictions = new JsonObject();
+        }
+        boxes_tray = new ArrayList<>();
+
+        for(String image_name: image_names) {
+            Log.d("polytest", image_name);
+            JsonArray image_preds;
+            try {
+                image_preds = predictions.get(image_name).getAsJsonArray();
+            } catch (Exception e) {
+                image_preds = new JsonArray();
+            }
+            boolean first = true;
+            ArrayList<Box> boxes = new ArrayList<>();
+            for(JsonElement jsonElement: image_preds) {
+                if(first) {first = false; continue;}
+                JsonObject pred = jsonElement.getAsJsonObject();
+                JsonArray coordinates = pred.get("coordinates").getAsJsonArray();
+
+                Polygon.Builder polyBuilder = Polygon.Builder();
+                for(JsonElement tempObject: coordinates) {
+                    JsonArray coordinate = tempObject.getAsJsonArray();
+                    int x = coordinate.get(0).getAsInt();
+                    int y = coordinate.get(1).getAsInt();
+                    polyBuilder.addVertex(new Point(x, y));
+                }
+                Polygon poly = polyBuilder.build();
+
+                String desc = pred.get("description").getAsString();
+                String locale = pred.get("locale").getAsString();
+
+                Box b = new Box(poly, desc, locale);
+                boxes.add(b);
+            }
+            Log.d("polytest", String.valueOf(boxes.size()));
+            boxes_tray.add(boxes);
+        }
+    }
+
+    public void checkBoxes(int x, int y) {
+        String to_read = "";
+        for(Box b: currentList) {
+            if (b.polygon.contains(new Point(x, y)))
+            to_read += b.desc;
+        }
+        if(to_read != "")
+        speak(to_read.toLowerCase(Locale.ROOT)
+        );
     }
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getSupportActionBar().hide();
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+        Intent intent = getIntent();
+        image_dir = getExternalCacheDir()+"/blind_assistant_images/";
+        image_names = intent.getStringArrayListExtra("image_names");
+        outputJson = getJsonFromString(intent.getStringExtra("json_data"));
+
+        createBoxes();
         setContentView(R.layout.activity_ocrdisplay);
         mTTS =  new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
@@ -67,11 +141,6 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
         ////////
 
 
-        Intent intent = getIntent();
-        image_dir = getExternalCacheDir()+"/blind_assistant_images/";
-        image_names = intent.getStringArrayListExtra("image_names");
-        modelOutput = getJsonFromString(intent.getStringExtra("json_data"));
-        Log.d("model-json-test", modelOutput.toString());
 
         imageView = findViewById(R.id.ocrImage);
         nextButton = findViewById(R.id.ocr_next);
@@ -83,8 +152,11 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
         Bitmap bmp = BitmapFactory.decodeFile(image_dir+image_names.get(currentIndex)+".jpg");
         Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
         imageView.setImageBitmap(sbmp);
-        currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
+        currentList = boxes_tray.get(currentIndex);
         Log.d("current-list", currentList.toString());
+
+        //message
+        new SendMessage(socket, image_names.get(currentIndex));
 
         imageView.setDrawingCacheEnabled(true);
         imageView.buildDrawingCache(true);
@@ -100,11 +172,18 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
             }
         });
     }
+    private  void speak( String message){
+        float pitch = 1f;
+        float speed = 1f;
+        mTTS.setPitch(pitch);
+        mTTS.setSpeechRate(speed);
+        mTTS.speak(message,TextToSpeech.QUEUE_FLUSH,null);
+    }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.previous_button:
+            case R.id.ocr_prev:
                 Log.d("test", "reached in previous");
                 if(currentIndex>0) {
                     currentIndex = currentIndex-1;
@@ -115,13 +194,14 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
                     Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
                     //bitmap = BitmapFactory.decodeFile(map.get(""+index));
                     imageView.setImageBitmap(sbmp);
-                    currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
-                    Log.d("current-list", currentList.toString());
+                    currentList = boxes_tray.get(currentIndex);
+                    Log.d("current-list", String.valueOf(currentList.size()));
+                    new SendMessage(socket, image_names.get(currentIndex));
 
                     //speak("previous");
                 }
                 break;
-            case R.id.next_button:
+            case R.id.ocr_next:
                 Log.d("test", "reached in next");
                 if(currentIndex<image_names.size()-1) {
                     currentIndex = currentIndex+1;
@@ -131,8 +211,9 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
                     Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
                     imageView.setImageBitmap(sbmp);
                     Log.d("test", imageView.getWidth() + " " + imageView.getHeight());
-                    currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
-                    Log.d("current-list", currentList.toString());
+                    currentList = boxes_tray.get(currentIndex);
+                    Log.d("current-list", String.valueOf(currentList.size()));
+                    new SendMessage(socket, image_names.get(currentIndex));
 
                     //speak("next");
                 }
