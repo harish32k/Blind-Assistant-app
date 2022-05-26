@@ -27,19 +27,4 @@
         android:text="left"
         android:layout_below="@id/backBox"/>
 
-    <Button
-        android:id="@+id/accept_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Accept"
-        android:layout_below="@id/leftBox"
-        android:layout_centerHorizontal="true"/>
-
-    <Button
-        android:id="@+id/cancel_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="cancel"
-        android:layout_below="@id/accept_button"
-        android:layout_centerHorizontal="true"/>
 </RelativeLayout>

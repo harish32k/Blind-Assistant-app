@@ -156,7 +156,7 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
         Log.d("current-list", currentList.toString());
 
         //message
-        new SendMessage(socket, image_names.get(currentIndex));
+        //new SendMessage(socket, image_names.get(currentIndex));
 
         imageView.setDrawingCacheEnabled(true);
         imageView.buildDrawingCache(true);
@@ -196,7 +196,7 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
                     imageView.setImageBitmap(sbmp);
                     currentList = boxes_tray.get(currentIndex);
                     Log.d("current-list", String.valueOf(currentList.size()));
-                    new SendMessage(socket, image_names.get(currentIndex));
+                    //new SendMessage(socket, image_names.get(currentIndex));
 
                     //speak("previous");
                 }
@@ -213,7 +213,7 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
                     Log.d("test", imageView.getWidth() + " " + imageView.getHeight());
                     currentList = boxes_tray.get(currentIndex);
                     Log.d("current-list", String.valueOf(currentList.size()));
-                    new SendMessage(socket, image_names.get(currentIndex));
+                    //new SendMessage(socket, image_names.get(currentIndex));
 
                     //speak("next");
                 }

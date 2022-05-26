@@ -66,6 +66,7 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
         y = (int) (1.2 * y);
         ArrayList<String> detected = new ArrayList<>();
         String found_items = "";
+
         for (JsonElement jelem: currentList) {
             JsonObject box = jelem.getAsJsonObject();
             float xmin = box.get("xmin").getAsFloat();
@@ -81,6 +82,7 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
             }
             Log.d("jsonElement", box.toString());
         }
+        Log.d("detected", "here");
         if(found_items != ""){
             vibrate_color(r);
             speak(found_items.substring(0, found_items.length()));
@@ -151,7 +153,13 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
         Bitmap bmp = BitmapFactory.decodeFile(image_dir+image_names.get(currentIndex)+".jpg");
         Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
         imageView.setImageBitmap(sbmp);
-        currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
+
+        try {
+            currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
+            if(currentList == null) currentList = new JsonArray();
+        } catch (Exception e) {
+            currentList = new JsonArray();
+        }
         //Log.d("current-list", currentList.toString());
 
         imageView.setDrawingCacheEnabled(true);
@@ -176,6 +184,8 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
                             textView.setBackgroundColor(Color.rgb(r,g,b));
                             String temp = "R: "+r+"G: "+g+"B: "+b;
                             textView.setText(temp);
+                            Log.d("obj_depth", "here: "+ image_names.get(currentIndex));
+                            Log.d("obj_depth", "x: " + x + ", y: " + y + ", r: " + r);
                             check_obj_and_depth(x, y, r);
                         }
                     }
@@ -195,6 +205,13 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
         toneGenerator.startTone(ToneGenerator.TONE_CDMA_PIP, 150);
     }
 
+    public void refresh_image_view() {
+        imageView.setDrawingCacheEnabled(false);
+        imageView.buildDrawingCache(false);
+        imageView.setDrawingCacheEnabled(true);
+        imageView.buildDrawingCache(true);
+    }
+
 
     @Override
     public void onClick(View v) {
@@ -204,16 +221,18 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
                 if (currentIndex > 0) {
                     currentIndex = currentIndex - 1;
                     String filename = image_dir + image_names.get(currentIndex) + ".jpg";
-                    //byte[] myImage = imageMap.get(image_names.get(currentIndex));
-                    //Bitmap bitmap = BitmapFactory.decodeByteArray(myImage, 0, myImage.length);
                     Bitmap bmp = BitmapFactory.decodeFile(filename);
                     Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
-                    //bitmap = BitmapFactory.decodeFile(map.get(""+index));
                     imageView.setImageBitmap(sbmp);
-                    currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
+                    refresh_image_view();
+                    try {
+                        currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
+                        if(currentList == null) currentList = new JsonArray();
+                    } catch (Exception e) {
+                        currentList = new JsonArray();
+                    }
                     //Log.d("current-list", currentList.toString());
 
-                    //speak("previous");
                 }
                 break;
             case R.id.objdepth_next:
@@ -225,8 +244,14 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
                     Bitmap bmp = BitmapFactory.decodeFile(filename);
                     Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
                     imageView.setImageBitmap(sbmp);
+                    refresh_image_view();
                     Log.d("test", imageView.getWidth() + " " + imageView.getHeight());
-                    currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
+                    try {
+                        currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
+                        if(currentList == null) currentList = new JsonArray();
+                    } catch (Exception e) {
+                        currentList = new JsonArray();
+                    }
                     //Log.d("current-list", currentList.toString());
 
                     //speak("next");

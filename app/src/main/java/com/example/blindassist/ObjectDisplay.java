@@ -111,7 +111,17 @@ public class ObjectDisplay extends AppCompatActivity implements View.OnClickList
         Bitmap bmp = BitmapFactory.decodeFile(image_dir+image_names.get(currentIndex)+".jpg");
         Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
         imageView.setImageBitmap(sbmp);
-        currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
+
+        JsonObject pred_obj = modelOutput.getAsJsonObject("prediction");
+
+        try {
+            currentList = pred_obj.getAsJsonArray(image_names.get(currentIndex));
+            if(currentList == null) currentList = new JsonArray();
+        } catch (Exception e) {
+            currentList = new JsonArray();
+        }
+
+        Log.d("current-list", "here");
         Log.d("current-list", currentList.toString());
 
         imageView.setDrawingCacheEnabled(true);
@@ -147,13 +157,15 @@ public class ObjectDisplay extends AppCompatActivity implements View.OnClickList
                 if(currentIndex>0) {
                     currentIndex = currentIndex-1;
                     String filename = image_dir+image_names.get(currentIndex)+".jpg";
-                    //byte[] myImage = imageMap.get(image_names.get(currentIndex));
-                    //Bitmap bitmap = BitmapFactory.decodeByteArray(myImage, 0, myImage.length);
                     Bitmap bmp = BitmapFactory.decodeFile(filename);
                     Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
-                    //bitmap = BitmapFactory.decodeFile(map.get(""+index));
                     imageView.setImageBitmap(sbmp);
-                    currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
+                    try {
+                        currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
+                        if(currentList == null) currentList = new JsonArray();
+                    } catch (Exception e) {
+                        currentList = new JsonArray();
+                    }
                     Log.d("current-list", currentList.toString());
 
                     //speak("previous");
@@ -163,13 +175,17 @@ public class ObjectDisplay extends AppCompatActivity implements View.OnClickList
                 Log.d("test", "reached in next");
                 if(currentIndex<image_names.size()-1) {
                     currentIndex = currentIndex+1;
-                    //byte[] myImage = imageMap.get(image_names.get(currentIndex));
                     String filename = image_dir+image_names.get(currentIndex)+".jpg";
                     Bitmap bmp = BitmapFactory.decodeFile(filename);
                     Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
                     imageView.setImageBitmap(sbmp);
                     Log.d("test", imageView.getWidth() + " " + imageView.getHeight());
-                    currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
+                    try {
+                        currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
+                        if(currentList == null) currentList = new JsonArray();
+                    } catch (Exception e) {
+                        currentList = new JsonArray();
+                    }
                     Log.d("current-list", currentList.toString());
 
                     //speak("next");

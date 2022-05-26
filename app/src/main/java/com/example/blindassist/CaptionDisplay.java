@@ -26,6 +26,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class CaptionDisplay extends AppCompatActivity implements View.OnClickListener {
@@ -42,6 +43,7 @@ public class CaptionDisplay extends AppCompatActivity implements View.OnClickLis
     private Bitmap bitmap;
     private Vibrator vibrator;
     private JsonObject outputJson;
+    private HashMap<String, String> cam_pos = new HashMap<>();
 
 
 
@@ -79,6 +81,12 @@ public class CaptionDisplay extends AppCompatActivity implements View.OnClickLis
             }
         });
 
+        cam_pos.put("img1", "front");
+        cam_pos.put("img2", "right");
+        cam_pos.put("img3", "back");
+        cam_pos.put("img4", "left");
+
+
         Intent intent = getIntent();
         image_dir = getExternalCacheDir()+"/blind_assistant_images/";
         image_names = intent.getStringArrayListExtra("image_names");
@@ -95,6 +103,7 @@ public class CaptionDisplay extends AppCompatActivity implements View.OnClickLis
         prevButton.setOnClickListener(this);
 
         Log.d("caption", image_dir+image_names.get(currentIndex)+".jpg");
+        textView.setText(cam_pos.get(image_names.get(currentIndex)));
         Bitmap bmp = BitmapFactory.decodeFile(image_dir+image_names.get(currentIndex)+".jpg");
         Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
         imageView.setImageBitmap(sbmp);
@@ -144,6 +153,7 @@ public class CaptionDisplay extends AppCompatActivity implements View.OnClickLis
                     Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
                     //bitmap = BitmapFactory.decodeFile(map.get(""+index));
                     imageView.setImageBitmap(sbmp);
+                    textView.setText(cam_pos.get(image_names.get(currentIndex)));
                     //currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
                     //Log.d("current-list", currentList.toString());
 
@@ -159,6 +169,7 @@ public class CaptionDisplay extends AppCompatActivity implements View.OnClickLis
                     Bitmap bmp = BitmapFactory.decodeFile(filename);
                     Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
                     imageView.setImageBitmap(sbmp);
+                    textView.setText(cam_pos.get(image_names.get(currentIndex)));
                     Log.d("test", imageView.getWidth() + " " + imageView.getHeight());
                     //currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
                     //Log.d("current-list", currentList.toString());

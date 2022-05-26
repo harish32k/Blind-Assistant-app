@@ -45,7 +45,7 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
     public static BluetoothSocket skt;
     public BluetoothSocket socket;
     private TextToSpeech mTTS;
-    private Button object, caption, face, ocr, depth, speak, recent_button;
+    private Button object, caption, face, ocr, depth, grief_button, obj_depth_button, speak, recent_button;
     private Intent intent;
     private List<String> objectSpeech = Arrays.asList("object", "object recognition", "object detection");
     private  List<String>captionSpeech = Arrays.asList("image","image captioning","caption","captioning");
@@ -63,7 +63,6 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
         depth.setEnabled(state);
         speak.setEnabled(state);
     }
-
 
     public void open_dialog() {
         MyDialogBox myDialogBox = new MyDialogBox();
@@ -92,22 +91,37 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
                 return false;
             }
         });
+
+        // buttons
         object = findViewById(R.id.button1);
         object.setOnClickListener(this);
+
         caption = findViewById(R.id.button2);
         caption.setOnClickListener(this);
+
         face = findViewById(R.id.button3);
         face.setOnClickListener(this);
+
         ocr = findViewById(R.id.button4);
         ocr.setOnClickListener(this);
+
         depth = findViewById(R.id.button5);
         depth.setOnClickListener(this);
+
         speak = findViewById(R.id.speak);
         speak.setOnClickListener(this);
+
+        obj_depth_button = findViewById(R.id.button6);
+        obj_depth_button.setOnClickListener(this);
+
+        grief_button = findViewById(R.id.button7);
+        grief_button.setOnClickListener(this);
+
         recent_button = findViewById(R.id.recent_button);
         recent_button.setOnClickListener(this);
         set_button_state(false);
 
+        //start intent
         Intent intent = getIntent();
         BluetoothDevice device = intent.getParcelableExtra("device");
         String name = "";
@@ -130,45 +144,24 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button1:
-                //speak("Performing Object Recognition");
                 task = "object";
                 open_dialog();
-                //new SendMessage(socket,"object");
-                //intent = new Intent(this,GetDataActivity.class);
-                //intent = new Intent(this,MainActivity2.class);
-                //startActivity(intent);
                 break;
             case R.id.button2:
-                //speak("Performing Image Captioning");
                 task = "caption";
                 open_dialog();
-                //new SendMessage(socket,"caption");
-                //intent = new Intent(this,TesterActivity.class);
-                //startActivity(intent);
                 break;
             case R.id.button3:
-                //speak("Performing Face Recognition");
                 task = "face";
                 open_dialog();
-                //new SendMessage(socket,"face");
-                //intent = new Intent(this,MainActivity2.class);
-                //startActivity(intent);
                 break;
             case R.id.button4:
-                //speak("Performing Read Text");
                 task = "ocr";
                 open_dialog();
-                //new SendMessage(socket,"ocr");
-                //intent = new Intent(this,GetDataActivity.class);
-                //startActivity(intent);
                 break;
             case R.id.button5:
-                //speak("Performing Depth Estimation");
-                //new SendMessage(socket,"depth");
                 task = "depth";
                 open_dialog();
-                //intent = new Intent(this,GetDataActivity.class);
-                //startActivity(intent);
                 break;
             case R.id.button6:
                 task = "obj_depth";
@@ -200,33 +193,25 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
                 if (resultCode == RESULT_OK && data != null) {
                     ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     if(objectSpeech.contains(result.get(0))){
-                        Log.d("object",result.get(0));
-                        new SendMessage(socket,"object");
-                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                        intent = new Intent(this,MainActivity2.class);
-                        startActivity(intent);
+                        task = "object";
+                        open_dialog();
                         //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                     }
                     else if(captionSpeech.contains(result.get(0))){
-                        new SendMessage(socket,"caption");
-                        intent = new Intent(this,MainActivity2.class);
-                        startActivity(intent);
+                        task = "caption";
+                        open_dialog();
                     }
                     else if(faceSpeech.contains(result.get(0))){
-                        new SendMessage(socket,"face");
-                        intent = new Intent(this,MainActivity2.class);
-                        startActivity(intent);
+                        task = "face";
+                        open_dialog();
                     }
                     else if(ocrSpeech.contains(result.get(0))){
-                        new SendMessage(socket,"ocr");
-                        intent = new Intent(this,MainActivity2.class);
-                        startActivity(intent);
+                        task = "ocr";
+                        open_dialog();
                     }
                     else if(depthSpeech.contains(result.get(0))){
-                        Log.d("depth","estimation");
-                        new SendMessage(socket,"depth");
-                        intent = new Intent(this,MainActivity2.class);
-                        startActivity(intent);
+                        task = "depth";
+                        open_dialog();
                     }
                     else {
                         speak("Not Available");
@@ -259,19 +244,6 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
         new SendMessage(socket,task + " " + fb_token + " " + directions);
     }
 
-    //    private class SendMessage implements View.OnClickListener {
-//
-//        @Override
-//        public void onClick(View view) {
-//            String message = String.valueOf(messageView.getText());
-//            try {
-//                OutputStream ostream = socket.getOutputStream();
-//                ostream.write(message.getBytes(StandardCharsets.UTF_8));
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
     private class ConnectThread extends Thread {
         private final BluetoothSocket mmSocket;
         private final BluetoothDevice mmDevice;
@@ -330,3 +302,19 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
     }
 
 }
+
+
+
+//    private class SendMessage implements View.OnClickListener {
+//
+//        @Override
+//        public void onClick(View view) {
+//            String message = String.valueOf(messageView.getText());
+//            try {
+//                OutputStream ostream = socket.getOutputStream();
+//                ostream.write(message.getBytes(StandardCharsets.UTF_8));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }

@@ -71,12 +71,14 @@ public class GetDataActivity extends AppCompatActivity {
         JsonObject predictions = outputJson.getAsJsonObject("prediction");
         for(String image_name: image_names) {
             JsonArray jsonArray;
-            jsonArray = predictions.getAsJsonArray(image_name);
-            if (jsonArray == null) {
+            try {
+                jsonArray = predictions.getAsJsonArray(image_name);
+                if(jsonArray == null) jsonArray = new JsonArray();
+            } catch (NullPointerException e) {
                 jsonArray = new JsonArray();
             }
             boxes.add(jsonArray);
-            Log.d("json-test", jsonArray.toString());
+            //Log.d("json-test", jsonArray.toString());
             Intent intent = new Intent(GetDataActivity.this, ObjectDisplay.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.putExtra("image_names", image_names);
@@ -106,8 +108,11 @@ public class GetDataActivity extends AppCompatActivity {
         boxes = new ArrayList<>();
         JsonObject predictions = outputJson.getAsJsonObject("prediction");
         for(String image_name: image_names) {
-            JsonArray jsonArray = predictions.getAsJsonArray(image_name);
-            if (jsonArray == null) {
+            JsonArray jsonArray;
+            try {
+                jsonArray = predictions.getAsJsonArray(image_name);
+                if(jsonArray == null) jsonArray = new JsonArray();
+            } catch (NullPointerException e) {
                 jsonArray = new JsonArray();
             }
             boxes.add(jsonArray);
