@@ -7,7 +7,7 @@
         android:id="@+id/frontBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="front" />
+        android:text="front"/>
     <CheckBox
         android:id="@+id/rightBox"
         android:layout_width="match_parent"

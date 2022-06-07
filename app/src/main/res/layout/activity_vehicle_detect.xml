@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".VehicleDetect">
+
+    <Button
+        android:id="@+id/start_vehicle"
+        android:layout_width="244dp"
+        android:layout_height="129dp"
+        android:layout_marginTop="176dp"
+        android:text="Start Vehicle Detection"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:focusableInTouchMode="true"/>
+
+    <Button
+        android:id="@+id/stop_vehicle"
+        android:layout_width="244dp"
+        android:layout_height="129dp"
+        android:text="Stop Vehicle Detection"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/start_vehicle"
+        app:layout_constraintVertical_bias="0.338"
+        android:focusableInTouchMode="true"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

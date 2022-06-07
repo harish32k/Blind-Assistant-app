@@ -1,5 +1,7 @@
 package com.example.blindassist;
 
+import static com.example.blindassist.ControlActivity.cam_pos;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
@@ -43,8 +45,11 @@ public class CaptionDisplay extends AppCompatActivity implements View.OnClickLis
     private Bitmap bitmap;
     private Vibrator vibrator;
     private JsonObject outputJson;
-    private HashMap<String, String> cam_pos = new HashMap<>();
 
+
+    private int dstWidth = 1200;
+    private int dstHeight = 900;
+    double scaleFactor = 1/1.875;
 
 
     public JsonObject getJsonFromString(String jsonString) {
@@ -69,7 +74,7 @@ public class CaptionDisplay extends AppCompatActivity implements View.OnClickLis
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getSupportActionBar().hide();
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setContentView(R.layout.activity_caption_display);
 
         mTTS =  new TextToSpeech(this, new TextToSpeech.OnInitListener() {
@@ -77,14 +82,10 @@ public class CaptionDisplay extends AppCompatActivity implements View.OnClickLis
             public void onInit(int i) {
                 if(i==TextToSpeech.SUCCESS){
                     mTTS.setLanguage(Locale.US);
+                    speak(cam_pos.get(image_names.get(currentIndex)));
                 }
             }
         });
-
-        cam_pos.put("img1", "front");
-        cam_pos.put("img2", "right");
-        cam_pos.put("img3", "back");
-        cam_pos.put("img4", "left");
 
 
         Intent intent = getIntent();
@@ -105,28 +106,27 @@ public class CaptionDisplay extends AppCompatActivity implements View.OnClickLis
         Log.d("caption", image_dir+image_names.get(currentIndex)+".jpg");
         textView.setText(cam_pos.get(image_names.get(currentIndex)));
         Bitmap bmp = BitmapFactory.decodeFile(image_dir+image_names.get(currentIndex)+".jpg");
-        Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
+        Bitmap sbmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, false);
         imageView.setImageBitmap(sbmp);
         //currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
         //Log.d("current-list", currentList.toString());
 
         imageView.setDrawingCacheEnabled(true);
         imageView.buildDrawingCache(true);
-
         imageView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if(motionEvent.getAction() == MotionEvent.ACTION_DOWN || motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
-                    int x = (int) (motionEvent.getX());
-                    int y = (int) (motionEvent.getY());
+                    int x = (int) (motionEvent.getX()*scaleFactor);
+                    int y = (int) (motionEvent.getY()*scaleFactor);
                     bitmap = imageView.getDrawingCache();
                     try{
-                        if(x >= 0 && x <= 1600 && y >= 0 && y <= 900) {
+                        if(x >= 0 && x <= 1200 && y >= 0 && y <= 900) {
                             speak_caption();
                         }
                     }
                     catch (Exception e) {
-                        throw e;
+                        //throw e;
                         //do nothing
                     }
 
@@ -150,7 +150,7 @@ public class CaptionDisplay extends AppCompatActivity implements View.OnClickLis
                     //byte[] myImage = imageMap.get(image_names.get(currentIndex));
                     //Bitmap bitmap = BitmapFactory.decodeByteArray(myImage, 0, myImage.length);
                     Bitmap bmp = BitmapFactory.decodeFile(filename);
-                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
+                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, false);
                     //bitmap = BitmapFactory.decodeFile(map.get(""+index));
                     imageView.setImageBitmap(sbmp);
                     textView.setText(cam_pos.get(image_names.get(currentIndex)));
@@ -158,6 +158,7 @@ public class CaptionDisplay extends AppCompatActivity implements View.OnClickLis
                     //Log.d("current-list", currentList.toString());
 
                     //speak("previous");
+                    speak(cam_pos.get(image_names.get(currentIndex)));
                 }
                 break;
             case R.id.caption_next:
@@ -167,7 +168,7 @@ public class CaptionDisplay extends AppCompatActivity implements View.OnClickLis
                     //byte[] myImage = imageMap.get(image_names.get(currentIndex));
                     String filename = image_dir + image_names.get(currentIndex) + ".jpg";
                     Bitmap bmp = BitmapFactory.decodeFile(filename);
-                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
+                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, false);
                     imageView.setImageBitmap(sbmp);
                     textView.setText(cam_pos.get(image_names.get(currentIndex)));
                     Log.d("test", imageView.getWidth() + " " + imageView.getHeight());
@@ -175,6 +176,7 @@ public class CaptionDisplay extends AppCompatActivity implements View.OnClickLis
                     //Log.d("current-list", currentList.toString());
 
                     //speak("next");
+                    speak(cam_pos.get(image_names.get(currentIndex)));
                 }
                 break;
             default:

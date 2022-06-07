@@ -1,5 +1,7 @@
 package com.example.blindassist;
 
+import static com.example.blindassist.ControlActivity.cam_pos;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
@@ -49,6 +51,9 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
     public BluetoothSocket socket = ControlActivity.skt;
 
 
+    private int dstWidth = 1200;
+    private int dstHeight = 900;
+    double scaleFactor = 1/1.875;
 
     public JsonObject getJsonFromString(String jsonString) {
         JsonObject obj = JsonParser.parseString(jsonString).getAsJsonObject();
@@ -120,7 +125,7 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getSupportActionBar().hide();
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
         Intent intent = getIntent();
         image_dir = getExternalCacheDir()+"/blind_assistant_images/";
@@ -134,6 +139,7 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
             public void onInit(int i) {
                 if(i==TextToSpeech.SUCCESS){
                     mTTS.setLanguage(Locale.US);
+                    speak(cam_pos.get(image_names.get(currentIndex)));
                 }
             }
         });
@@ -150,7 +156,7 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
         prevButton.setOnClickListener(this);
 
         Bitmap bmp = BitmapFactory.decodeFile(image_dir+image_names.get(currentIndex)+".jpg");
-        Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
+        Bitmap sbmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, false);
         imageView.setImageBitmap(sbmp);
         currentList = boxes_tray.get(currentIndex);
         Log.d("current-list", currentList.toString());
@@ -164,15 +170,15 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if(motionEvent.getAction() == MotionEvent.ACTION_DOWN || motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
-                    int x = (int) (1.2 * motionEvent.getX());
-                    int y = (int) (1.2 * motionEvent.getY());
+                    int x = (int) (motionEvent.getX()*scaleFactor);
+                    int y = (int) (motionEvent.getY()*scaleFactor);
                     checkBoxes(x, y);
                 }
                 return false;
             }
         });
     }
-    private  void speak( String message){
+    private void speak( String message){
         float pitch = 1f;
         float speed = 1f;
         mTTS.setPitch(pitch);
@@ -191,13 +197,13 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
                     //byte[] myImage = imageMap.get(image_names.get(currentIndex));
                     //Bitmap bitmap = BitmapFactory.decodeByteArray(myImage, 0, myImage.length);
                     Bitmap bmp = BitmapFactory.decodeFile(filename);
-                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
+                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, false);
                     //bitmap = BitmapFactory.decodeFile(map.get(""+index));
                     imageView.setImageBitmap(sbmp);
                     currentList = boxes_tray.get(currentIndex);
                     Log.d("current-list", String.valueOf(currentList.size()));
                     //new SendMessage(socket, image_names.get(currentIndex));
-
+                    speak(cam_pos.get(image_names.get(currentIndex)));
                     //speak("previous");
                 }
                 break;
@@ -208,13 +214,13 @@ public class OCRDisplay extends AppCompatActivity implements View.OnClickListene
                     //byte[] myImage = imageMap.get(image_names.get(currentIndex));
                     String filename = image_dir+image_names.get(currentIndex)+".jpg";
                     Bitmap bmp = BitmapFactory.decodeFile(filename);
-                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
+                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, false);
                     imageView.setImageBitmap(sbmp);
                     Log.d("test", imageView.getWidth() + " " + imageView.getHeight());
                     currentList = boxes_tray.get(currentIndex);
                     Log.d("current-list", String.valueOf(currentList.size()));
                     //new SendMessage(socket, image_names.get(currentIndex));
-
+                    speak(cam_pos.get(image_names.get(currentIndex)));
                     //speak("next");
                 }
                 break;

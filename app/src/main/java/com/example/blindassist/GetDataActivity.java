@@ -53,7 +53,7 @@ public class GetDataActivity extends AppCompatActivity {
     }
 
     public JsonObject getJsonFromString(String jsonString) {
-        jsonString = getJsonFromSnapshot(snapshot);
+        //jsonString = getJsonFromSnapshot(snapshot);
         JsonObject obj = JsonParser.parseString(jsonString).getAsJsonObject();
         return obj;
     }
@@ -64,6 +64,7 @@ public class GetDataActivity extends AppCompatActivity {
         intent.putExtra("image_names", image_names);
         intent.putExtra("json_data", getJsonFromSnapshot(snapshot));
         startActivity(intent);
+        finish();
     }
 
     public void process_boxes() {
@@ -84,6 +85,7 @@ public class GetDataActivity extends AppCompatActivity {
             intent.putExtra("image_names", image_names);
             intent.putExtra("json_data", getJsonFromSnapshot(snapshot));
             startActivity(intent);
+            finish();
         }
     }
 
@@ -93,6 +95,7 @@ public class GetDataActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra("image_names", image_names);
         startActivity(intent);
+        finish();
     }
 
     public void caption_starter() {
@@ -102,6 +105,7 @@ public class GetDataActivity extends AppCompatActivity {
         intent.putExtra("image_names", image_names);
         intent.putExtra("json_data", outputJson.toString());
         startActivity(intent);
+        finish();
     }
 
     public void process_obj_depth_boxes() {
@@ -122,7 +126,17 @@ public class GetDataActivity extends AppCompatActivity {
             intent.putExtra("image_names", image_names);
             intent.putExtra("json_data", getJsonFromSnapshot(snapshot));
             startActivity(intent);
+            finish();
         }
+    }
+
+    public void start_face() {
+        JsonObject predictions = outputJson.getAsJsonObject("prediction");
+        String faces = outputJson.toString();
+        Intent intent = new Intent(GetDataActivity.this, CheckFaces.class);
+        intent.putExtra("faces", faces);
+        startActivity(intent);
+        finish();
     }
 
 
@@ -230,7 +244,17 @@ public class GetDataActivity extends AppCompatActivity {
                     snapshot = task.getResult();
                     outputJson = getJsonFromString(getJsonFromSnapshot(snapshot));
                     image_names = (ArrayList<String>) snapshot.child("img_list").getValue();
+                    if(image_names == null) { image_names = new ArrayList<>(); }
                     for(String image_name: image_names) pendingImages.add(image_name);
+
+                    String check_face = outputJson.get("task").getAsString();
+
+                    Log.d("faces", "here: " + check_face);
+                    if(check_face.equals("face")) {
+
+                        Log.d("faces", "here");
+                        start_face();
+                    }
 
                     Log.d("fb-download", "pendingImages: " + pendingImages.size() + " elements");
                     for(String image_name: image_names) {

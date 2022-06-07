@@ -12,7 +12,8 @@
         android:id="@+id/button1"
         android:layout_width="280dp"
         android:layout_height="50dp"
-        android:layout_marginTop="72dp"
+        android:layout_marginTop="16dp"
+        android:focusableInTouchMode="true"
         android:text="Object Recognition"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
@@ -30,7 +31,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button1" />
+        app:layout_constraintTop_toBottomOf="@+id/button1"
+        android:focusableInTouchMode="true"/>
 
     <Button
         android:id="@+id/button3"
@@ -42,7 +44,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button2" />
+        app:layout_constraintTop_toBottomOf="@+id/button2"
+        android:focusableInTouchMode="true"/>
 
     <Button
         android:id="@+id/button4"
@@ -54,7 +57,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button3" />
+        app:layout_constraintTop_toBottomOf="@+id/button3"
+        android:focusableInTouchMode="true"/>
 
     <Button
         android:id="@+id/button5"
@@ -66,7 +70,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button4" />
+        app:layout_constraintTop_toBottomOf="@+id/button4"
+        android:focusableInTouchMode="true"/>
 
     <Button
         android:id="@+id/button6"
@@ -78,7 +83,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button5" />
+        app:layout_constraintTop_toBottomOf="@+id/button5"
+        android:focusableInTouchMode="true"/>
 
     <Button
         android:id="@+id/button7"
@@ -90,7 +96,33 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button6" />
+        app:layout_constraintTop_toBottomOf="@+id/button6"
+        android:focusableInTouchMode="true"/>
+    <Button
+        android:id="@+id/vehicle_button"
+        android:layout_width="280dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="22dp"
+        android:text="Vehicle detection"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button7"
+        android:focusableInTouchMode="true"/>
+
+    <Button
+        android:id="@+id/obstacle_button"
+        android:layout_width="280dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="22dp"
+        android:text="Obstacle detection"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/vehicle_button"
+        android:focusableInTouchMode="true"/>
 
     <Button
         android:id="@+id/speak"
@@ -101,8 +133,9 @@
         android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button7"
-        app:layout_constraintVertical_bias="0.437" />
+        app:layout_constraintTop_toBottomOf="@+id/obstacle_button"
+        app:layout_constraintVertical_bias="0.437"
+        android:focusableInTouchMode="true"/>
 
     <Button
         android:id="@+id/recent_button"
@@ -112,6 +145,7 @@
         android:textColor="@color/white"
         app:layout_constraintBaseline_toBaselineOf="@+id/speak"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/speak" />
+        app:layout_constraintStart_toEndOf="@+id/speak"
+        android:focusableInTouchMode="true"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

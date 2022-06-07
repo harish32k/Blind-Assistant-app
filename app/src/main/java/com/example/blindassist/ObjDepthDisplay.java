@@ -1,5 +1,7 @@
 package com.example.blindassist;
 
+import static com.example.blindassist.ControlActivity.cam_pos;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
@@ -51,6 +53,10 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
     private SoundPool soundPool;
     private int sound1;
 
+    private int dstWidth = 1200;
+    private int dstHeight = 900;
+    double scaleFactor = 1/1.875;
+
     public JsonObject getJsonFromString(String jsonString) {
         JsonObject obj = JsonParser.parseString(jsonString).getAsJsonObject();
         return obj;
@@ -62,8 +68,8 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
     }
 
     private void check_obj_and_depth(int x, int y, int r) {
-        x = (int) (1.2 * x);
-        y = (int) (1.2 * y);
+        x = (int) (x * scaleFactor);
+        y = (int) (y * scaleFactor);
         ArrayList<String> detected = new ArrayList<>();
         String found_items = "";
 
@@ -106,7 +112,7 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getSupportActionBar().hide();
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
         setContentView(R.layout.activity_obj_depth_display);
 
@@ -132,6 +138,7 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
             public void onInit(int i) {
                 if(i==TextToSpeech.SUCCESS){
                     mTTS.setLanguage(Locale.US);
+                    speak(cam_pos.get(image_names.get(currentIndex)));
                 }
             }
         });
@@ -151,7 +158,7 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
         prevButton.setOnClickListener(this);
 
         Bitmap bmp = BitmapFactory.decodeFile(image_dir+image_names.get(currentIndex)+".jpg");
-        Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
+        Bitmap sbmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, false);
         imageView.setImageBitmap(sbmp);
 
         try {
@@ -164,7 +171,6 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
 
         imageView.setDrawingCacheEnabled(true);
         imageView.buildDrawingCache(true);
-
         imageView.setOnTouchListener(new View.OnTouchListener() {
             @SuppressLint("ClickableViewAccessibility")
             @Override
@@ -174,9 +180,9 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
                     int y = (int) (motionEvent.getY());
                     bitmap = imageView.getDrawingCache();
                     try{
-                        if(x >= 0 && x <= 1600 && y >= 0 && y <= 900) {
+                        if(x >= 0 && x <= 1200 && y >= 0 && y <= 900) {
                             if(y>900) y = 900-1; if(y < 0) y = 1;
-                            if(x>1600) x = 1600-1; if(x < 0) x = 1;
+                            if(x>1200) x = 1200-1; if(x < 0) x = 1;
                             int pixel = bitmap.getPixel(x, y);
                             int r = Color.red(pixel);
                             int g = Color.green(pixel);
@@ -222,7 +228,7 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
                     currentIndex = currentIndex - 1;
                     String filename = image_dir + image_names.get(currentIndex) + ".jpg";
                     Bitmap bmp = BitmapFactory.decodeFile(filename);
-                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
+                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, false);
                     imageView.setImageBitmap(sbmp);
                     refresh_image_view();
                     try {
@@ -232,7 +238,7 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
                         currentList = new JsonArray();
                     }
                     //Log.d("current-list", currentList.toString());
-
+                    speak(cam_pos.get(image_names.get(currentIndex)));
                 }
                 break;
             case R.id.objdepth_next:
@@ -242,7 +248,7 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
                     //byte[] myImage = imageMap.get(image_names.get(currentIndex));
                     String filename = image_dir + image_names.get(currentIndex) + ".jpg";
                     Bitmap bmp = BitmapFactory.decodeFile(filename);
-                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
+                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, false);
                     imageView.setImageBitmap(sbmp);
                     refresh_image_view();
                     Log.d("test", imageView.getWidth() + " " + imageView.getHeight());
@@ -253,7 +259,7 @@ public class ObjDepthDisplay extends AppCompatActivity implements View.OnClickLi
                         currentList = new JsonArray();
                     }
                     //Log.d("current-list", currentList.toString());
-
+                    speak(cam_pos.get(image_names.get(currentIndex)));
                     //speak("next");
                 }
                 break;

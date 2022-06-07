@@ -1,5 +1,7 @@
 package com.example.blindassist;
 
+import static com.example.blindassist.ControlActivity.cam_pos;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
@@ -43,6 +45,11 @@ public class ObjectDisplay extends AppCompatActivity implements View.OnClickList
 
     private Bitmap bitmap;
 
+    private int dstWidth = 1200;
+    private int dstHeight = 900;
+    double scaleFactor = 1/1.875;
+
+
 
     public JsonObject getJsonFromString(String jsonString) {
         JsonObject obj = JsonParser.parseString(jsonString).getAsJsonObject();
@@ -79,7 +86,7 @@ public class ObjectDisplay extends AppCompatActivity implements View.OnClickList
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getSupportActionBar().hide();
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setContentView(R.layout.activity_objectdisplay);
 
         //////// setting TTS
@@ -88,6 +95,7 @@ public class ObjectDisplay extends AppCompatActivity implements View.OnClickList
             public void onInit(int i) {
                 if(i==TextToSpeech.SUCCESS){
                     mTTS.setLanguage(Locale.US);
+                    speak(cam_pos.get(image_names.get(currentIndex)));
                 }
             }
         });
@@ -109,7 +117,7 @@ public class ObjectDisplay extends AppCompatActivity implements View.OnClickList
         prevButton.setOnClickListener(this);
 
         Bitmap bmp = BitmapFactory.decodeFile(image_dir+image_names.get(currentIndex)+".jpg");
-        Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
+        Bitmap sbmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, false);
         imageView.setImageBitmap(sbmp);
 
         JsonObject pred_obj = modelOutput.getAsJsonObject("prediction");
@@ -129,10 +137,15 @@ public class ObjectDisplay extends AppCompatActivity implements View.OnClickList
         imageView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN || motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
-                    int x = (int) (1.2 * motionEvent.getX());
-                    int y = (int) (1.2 * motionEvent.getY());
-                    checkBoxes(x, y);
+
+                try {
+                    if(motionEvent.getAction() == MotionEvent.ACTION_DOWN || motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
+                        int x = (int) (motionEvent.getX()*scaleFactor);
+                        int y = (int) (motionEvent.getY()*scaleFactor);
+                        checkBoxes(x, y);
+                    }
+                } catch (Exception e) {
+                    //e.printStackTrace();
                 }
                 return false;
             }
@@ -158,7 +171,7 @@ public class ObjectDisplay extends AppCompatActivity implements View.OnClickList
                     currentIndex = currentIndex-1;
                     String filename = image_dir+image_names.get(currentIndex)+".jpg";
                     Bitmap bmp = BitmapFactory.decodeFile(filename);
-                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
+                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, false);
                     imageView.setImageBitmap(sbmp);
                     try {
                         currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
@@ -167,7 +180,7 @@ public class ObjectDisplay extends AppCompatActivity implements View.OnClickList
                         currentList = new JsonArray();
                     }
                     Log.d("current-list", currentList.toString());
-
+                    speak(cam_pos.get(image_names.get(currentIndex)));
                     //speak("previous");
                 }
                 break;
@@ -177,7 +190,7 @@ public class ObjectDisplay extends AppCompatActivity implements View.OnClickList
                     currentIndex = currentIndex+1;
                     String filename = image_dir+image_names.get(currentIndex)+".jpg";
                     Bitmap bmp = BitmapFactory.decodeFile(filename);
-                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
+                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, false);
                     imageView.setImageBitmap(sbmp);
                     Log.d("test", imageView.getWidth() + " " + imageView.getHeight());
                     try {
@@ -187,7 +200,7 @@ public class ObjectDisplay extends AppCompatActivity implements View.OnClickList
                         currentList = new JsonArray();
                     }
                     Log.d("current-list", currentList.toString());
-
+                    speak(cam_pos.get(image_names.get(currentIndex)));
                     //speak("next");
                 }
                 break;

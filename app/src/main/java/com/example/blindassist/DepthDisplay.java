@@ -1,5 +1,7 @@
 package com.example.blindassist;
 
+import static com.example.blindassist.ControlActivity.cam_pos;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
@@ -40,6 +42,13 @@ public class DepthDisplay extends AppCompatActivity implements View.OnClickListe
     private TextToSpeech mTTS;
     private Bitmap bitmap;
     private Vibrator vibrator;
+
+
+    private int dstWidth = 1200;
+    private int dstHeight = 900;
+    double scaleFactor = 1/1.875;
+
+    private volatile boolean spoken = false;
 
     public void vibrate_color(int strength) {
 
@@ -116,13 +125,14 @@ public class DepthDisplay extends AppCompatActivity implements View.OnClickListe
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getSupportActionBar().hide();
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setContentView(R.layout.activity_depth_display);
         mTTS =  new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int i) {
                 if(i==TextToSpeech.SUCCESS){
                     mTTS.setLanguage(Locale.US);
+                    speak(cam_pos.get(image_names.get(currentIndex)));
                 }
             }
         });
@@ -142,7 +152,7 @@ public class DepthDisplay extends AppCompatActivity implements View.OnClickListe
         prevButton.setOnClickListener(this);
 
         Bitmap bmp = BitmapFactory.decodeFile(image_dir+image_names.get(currentIndex)+".jpg");
-        Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
+        Bitmap sbmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, false);
         imageView.setImageBitmap(sbmp);
         //currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
         //Log.d("current-list", currentList.toString());
@@ -150,18 +160,19 @@ public class DepthDisplay extends AppCompatActivity implements View.OnClickListe
         imageView.setDrawingCacheEnabled(true);
         imageView.buildDrawingCache(true);
 
+
         imageView.setOnTouchListener(new View.OnTouchListener() {
             @SuppressLint("ClickableViewAccessibility")
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if(motionEvent.getAction() == MotionEvent.ACTION_DOWN || motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
-                    int x = (int) (motionEvent.getX());
-                    int y = (int) (motionEvent.getY());
+                    int x = (int) (motionEvent.getX()); //*scaleFactor);
+                    int y = (int) (motionEvent.getY()); //*scaleFactor);
                     bitmap = imageView.getDrawingCache();
                     try{
-                        if(x >= 0 && x <= 1600 && y >= 0 && y <= 900) {
+                        if(x >= 0 && x <= 1200 && y >= 0 && y <= 900) {
                             if(y>900) y = 900-1; if(y < 0) y = 1;
-                            if(x>1600) x = 1600-1; if(x < 0) x = 1;
+                            if(x>1200) x = 1200-1; if(x < 0) x = 1;
                             int pixel = bitmap.getPixel(x, y);
                             int r = Color.red(pixel);
                             int g = Color.green(pixel);
@@ -183,6 +194,22 @@ public class DepthDisplay extends AppCompatActivity implements View.OnClickListe
         //bitmap = imageView.getDrawingCache();
     }
 
+    public void refresh_image_view() {
+        imageView.setDrawingCacheEnabled(false);
+        imageView.buildDrawingCache(false);
+        imageView.setDrawingCacheEnabled(true);
+        imageView.buildDrawingCache(true);
+    }
+
+
+    private void speak( String message){
+        float pitch = 1f;
+        float speed = 1f;
+        mTTS.setPitch(pitch);
+        mTTS.setSpeechRate(speed);
+        mTTS.speak(message,TextToSpeech.QUEUE_FLUSH,null);
+    }
+
 
     @Override
     public void onClick(View v) {
@@ -195,12 +222,14 @@ public class DepthDisplay extends AppCompatActivity implements View.OnClickListe
                     //byte[] myImage = imageMap.get(image_names.get(currentIndex));
                     //Bitmap bitmap = BitmapFactory.decodeByteArray(myImage, 0, myImage.length);
                     Bitmap bmp = BitmapFactory.decodeFile(filename);
-                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
+                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, false);
                     //bitmap = BitmapFactory.decodeFile(map.get(""+index));
                     imageView.setImageBitmap(sbmp);
+                    refresh_image_view();
                     //currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
                     //Log.d("current-list", currentList.toString());
 
+                    speak(cam_pos.get(image_names.get(currentIndex)));
                     //speak("previous");
                 }
                 break;
@@ -211,12 +240,14 @@ public class DepthDisplay extends AppCompatActivity implements View.OnClickListe
                     //byte[] myImage = imageMap.get(image_names.get(currentIndex));
                     String filename = image_dir+image_names.get(currentIndex)+".jpg";
                     Bitmap bmp = BitmapFactory.decodeFile(filename);
-                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, 1600, 900, false);
+                    Bitmap sbmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, false);
                     imageView.setImageBitmap(sbmp);
+                    refresh_image_view();
                     Log.d("test", imageView.getWidth() + " " + imageView.getHeight());
                     //currentList = modelOutput.getAsJsonObject("prediction").getAsJsonArray(image_names.get(currentIndex));
                     //Log.d("current-list", currentList.toString());
 
+                    speak(cam_pos.get(image_names.get(currentIndex)));
                     //speak("next");
                 }
                 break;

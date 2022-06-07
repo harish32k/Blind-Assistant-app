@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, ControlActivity.class);
                 intent.putExtra("device", (Parcelable) device);
                 startActivity(intent);
+                finish();
             }
         });
 

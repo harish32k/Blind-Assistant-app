@@ -17,7 +17,11 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.icu.util.Output;
+import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
@@ -28,24 +32,30 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
 public class ControlActivity extends AppCompatActivity implements View.OnClickListener ,
-        MyDialogBox.MyDialogBoxListener {
+        MyDialogBox.MyDialogBoxListener, View.OnFocusChangeListener {
 
     private static final String TAG = "btconn";
     static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     public static BluetoothSocket skt;
     public BluetoothSocket socket;
     private TextToSpeech mTTS;
-    private Button object, caption, face, ocr, depth, grief_button, obj_depth_button, speak, recent_button;
+    private Button object, caption, face, ocr, depth, grief_button, obj_depth_button, speak_button, recent_button;
+    private Button vehicle_button, obstacle_button;
     private Intent intent;
     private List<String> objectSpeech = Arrays.asList("object", "object recognition", "object detection");
     private  List<String>captionSpeech = Arrays.asList("image","image captioning","caption","captioning");
@@ -54,6 +64,12 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
     private List<String>depthSpeech = Arrays.asList("depth","depth estimation","estimation");
     private String task = "";
     public String fb_token;
+    public static HashMap<String, String> cam_pos;
+
+    public static BluetoothSocket obstacle_socket = null;
+    public static boolean obstacle_connected = false;
+
+    private FusedLocationProviderClient fusedLocationProviderClient;
 
     private void set_button_state(boolean state) {
         object.setEnabled(state);
@@ -61,12 +77,41 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
         face.setEnabled(state);
         ocr.setEnabled(state);
         depth.setEnabled(state);
-        speak.setEnabled(state);
+        speak_button.setEnabled(state);
     }
 
     public void open_dialog() {
         MyDialogBox myDialogBox = new MyDialogBox();
         myDialogBox.show(getSupportFragmentManager(), "select direction");
+    }
+
+    public void start_grief_signal() {
+        String directions = "front right back left ";
+        Log.d("selected-task", task);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (getApplicationContext().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                // get location here
+                fusedLocationProviderClient.getLastLocation().addOnSuccessListener(
+                        new OnSuccessListener<Location>() {
+                            @Override
+                            public void onSuccess(Location location) {
+                                if (location != null) {
+                                    double lat = location.getLatitude();
+                                    double longt = location.getLongitude();
+
+                                    String coords = lat + " " + longt;
+                                    Log.d("msg", "Lol");
+                                    Log.d("msg", task + " " + "Example_User" + " " + coords);
+                                    new SendMessage(socket,task + " " + "Example_User" + " " + coords);
+
+                                }
+                            }
+                        }
+                );
+            } else {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            }
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -83,14 +128,22 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
         ConstraintLayout layout = findViewById(R.id.layout);
-        layout.setOnTouchListener(new View.OnTouchListener() {
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        /*layout.setOnTouchListener(new View.OnTouchListener() {
             @SuppressLint("ClickableViewAccessibility")
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 speak("Clicking Outside Boundaries");
                 return false;
             }
-        });
+        });*/
+
+
+        cam_pos = new HashMap<>();
+        cam_pos.put("img1", "front");
+        cam_pos.put("img2", "right");
+        cam_pos.put("img3", "back");
+        cam_pos.put("img4", "left");
 
         // buttons
         object = findViewById(R.id.button1);
@@ -108,8 +161,8 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
         depth = findViewById(R.id.button5);
         depth.setOnClickListener(this);
 
-        speak = findViewById(R.id.speak);
-        speak.setOnClickListener(this);
+        speak_button = findViewById(R.id.speak);
+        speak_button.setOnClickListener(this);
 
         obj_depth_button = findViewById(R.id.button6);
         obj_depth_button.setOnClickListener(this);
@@ -119,6 +172,13 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
 
         recent_button = findViewById(R.id.recent_button);
         recent_button.setOnClickListener(this);
+
+        vehicle_button = findViewById(R.id.vehicle_button);
+        vehicle_button.setOnClickListener(this);
+
+        obstacle_button = findViewById(R.id.obstacle_button);
+        obstacle_button.setOnClickListener(this);
+
         set_button_state(false);
 
         //start intent
@@ -138,10 +198,24 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
         ConnectThread connectThread = new ConnectThread(device);
         connectThread.start();
 
+        recent_button.setOnFocusChangeListener(this);
+        speak_button.setOnFocusChangeListener(this);
+        object.setOnFocusChangeListener(this);
+        caption.setOnFocusChangeListener(this);
+        face.setOnFocusChangeListener(this);
+        ocr.setOnFocusChangeListener(this);
+        depth.setOnFocusChangeListener(this);
+        grief_button.setOnFocusChangeListener(this);
+        obj_depth_button.setOnFocusChangeListener(this);
+        vehicle_button.setOnFocusChangeListener(this);
+        obstacle_button.setOnFocusChangeListener(this);
+
+
     }
 
     @Override
     public void onClick(View v) {
+        speak("selected: " + ((Button) v).getText().toString());
         switch (v.getId()) {
             case R.id.button1:
                 task = "object";
@@ -169,8 +243,18 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
                 break;
             case R.id.button7:
                 task = "grief";
-                open_dialog();
+                start_grief_signal();
                 break;
+            case R.id.vehicle_button:
+                task = "vehicle";
+            {Intent intent = new Intent(this, VehicleDetect.class);
+                startActivity(intent);}
+            break;
+            case R.id.obstacle_button:
+                task = "obstacle";
+            {Intent intent = new Intent(this, ObstacleActivity.class);
+                startActivity(intent);}
+            break;
             case R.id.recent_button:
                 Intent intent = new Intent(this, GetDataActivity.class);
                 startActivity(intent);
@@ -220,9 +304,10 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
                 break;
         }
     }
+
     private  void speak( String message){
         float pitch = 1f;
-        float speed = 0.5f;
+        float speed = 1.7f;
         mTTS.setPitch(pitch);
         mTTS.setSpeechRate(speed);
         mTTS.speak(message,TextToSpeech.QUEUE_FLUSH,null);
@@ -242,6 +327,15 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
         Intent intent = new Intent();
         Log.d("selected-task", task);
         new SendMessage(socket,task + " " + fb_token + " " + directions);
+    }
+
+    @Override
+    public void onFocusChange(View view, boolean b) {
+        if (b) {
+            speak((String) ((Button) view).getText());
+        } else {
+            //Toast.makeText(getApplicationContext(), "Lost the focus", Toast.LENGTH_LONG).show();
+        }
     }
 
     private class ConnectThread extends Thread {
@@ -299,6 +393,28 @@ public class ControlActivity extends AppCompatActivity implements View.OnClickLi
                 Log.e(TAG, "Could not close the client socket", e);
             }
         }
+    }
+
+    boolean doubleBackToExitPressedOnce = false;
+
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        speak("Please click BACK again to exit");
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 2000);
     }
 
 }
